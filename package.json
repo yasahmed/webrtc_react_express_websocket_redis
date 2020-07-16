@@ -19,7 +19,7 @@
   "scripts": {
     "dev": "react-scripts start",
     "start": "serve -s build",
-    "build": "react-scripts build",
+    "build": "npm run build",
     "heroku-postbuild": "npm run build"
   },
   "eslintConfig": {
