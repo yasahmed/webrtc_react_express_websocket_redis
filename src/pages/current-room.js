@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useReducer } from "react";
 import UserLists from "../widgets/user-lists";
+import UserConversationBlock from "../widgets/user-conversation-block";
 import ChatContainer from "../widgets/chat-container";
+import InputSearchLeftBlock from "../widgets/input-search-left-block";
 import styled from "styled-components";
 import socketIOClient from "socket.io-client";
 import { reducerIO } from "../store/reducer";
@@ -22,9 +24,9 @@ export default () => {
   const init = () => {
     var username = "";
     if (localStorage.getItem("user") == null) {
-      do{
+      do {
         username = prompt("Set Yout name");
-    }while(username == null || username == "" );
+      } while (username == null || username == "");
     } else var username = localStorage.getItem("user");
 
     localStorage.setItem("user", username);
@@ -42,7 +44,10 @@ export default () => {
 
     socket.on("update-user-list", ({ users }) => {
       console.log("spocket usrs", users);
-      gDispatch({ type: SET_CONNECTED_USERS, payload: users.filter(x=>x!=username) });
+      gDispatch({
+        type: SET_CONNECTED_USERS,
+        payload: users.filter((x) => x != username),
+      });
     });
 
     socket.on("remove-user", ({ socketId }) => {
@@ -50,11 +55,11 @@ export default () => {
     });
 
     socket.on("resp-chat-user", (data) => {
-      console.log("data",data);
+      console.log("data", data);
       setMessages((messages) => [
         ...messages,
         {
-          type: data.from==localStorage.getItem("user")?"mine":"other",
+          type: data.from == localStorage.getItem("user") ? "mine" : "other",
           message: data.message,
         },
       ]);
@@ -72,7 +77,7 @@ export default () => {
     if (msg && msg != "") {
       socket.emit("req-chat-user", {
         message: msg,
-        from:localStorage.getItem("user")
+        from: localStorage.getItem("user"),
       });
     }
   };
@@ -102,14 +107,104 @@ export default () => {
       }}
     >
       <Container>
-        <ChatContainer chatWith={chatWith} messages={messages} />
-        <UserLists />
+        <SplitedDivs className="border-bottom configure">
+          <LeftTools>
+            <IconTop className="fa fa-times" aria-hidden="true" />
+          </LeftTools>
+
+          <CenterTools></CenterTools>
+
+          <RightTools>
+            <IconTop className="fa fa-cog" aria-hidden="true" />
+            <IconTop className="fa fa-sign-out" aria-hidden="true" />
+          </RightTools>
+        </SplitedDivs>
+
+        <SplitedDivs className="column">
+          <ColumnDivs>
+            <InputSearchLeftBlock />
+            <UserConversationBlock />
+            <UserConversationBlock />
+            <UserConversationBlock />
+            <UserConversationBlock />
+          </ColumnDivs>
+          <ColumnDivs className="center"></ColumnDivs>
+          <ColumnDivs></ColumnDivs>
+        </SplitedDivs>
       </Container>
+
     </IContext.Provider>
   );
 };
 
 const Container = styled.div`
-  padding: 100px;
+  max-width: 1400px;
+  height: 70vh;
+  width: 1200px;
   display: flex;
+  flex-direction: column;
+  border-radius: 10px;
+  -webkit-box-shadow: 0px 10px 13px -7px #000000,
+    -2px 8px 24px 10px rgba(0, 0, 0, 0);
+  box-shadow: 0px 10px 13px -7px #909090, -2px 8px 24px 10px rgba(0, 0, 0, 0);
+`;
+
+const SplitedDivs = styled.div`
+ background-color:white;
+ &.border-bottom{
+   border-bottom:1px solid #ececec;d
+ }
+ &.configure{
+  height: 50px;
+  display: flex;
+  align-items: center;
+  padding-left: 20px;
+  padding-right: 20px;
+ }
+
+ &.column{
+  display: flex;
+  flex:1;
+ }
+`;
+
+const LeftTools = styled.div`
+  display: flex;
+  &.tool {
+  }
+`;
+
+const RightTools = styled.div`
+  padding-left: 13px;
+  display: flex;
+  &.tool {
+  }
+  & i {
+    padding-left: 13px;
+  }
+`;
+
+const CenterTools = styled.div`
+  flex: 1;
+`;
+
+const IconTop = styled.i`
+  color: #b1b1b1;
+  font-size: 19px;
+  cursor: pointer;
+  &:active {
+    color: #5a5a5a;
+  }
+  &:hover {
+    color: #9e9e9e;
+  }
+`;
+
+const ColumnDivs = styled.div`
+  width: 250px;
+  text-align: center;
+  border-right: 1px solid #ececec;
+  &.center {
+    flex: 1;
+  }
 `;
